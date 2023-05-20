@@ -1,6 +1,6 @@
 import pandas as pd
-import numpy as np
 
+from carry import calculate_carry_signals
 from momentum import calculate_momentum_signals
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
@@ -20,7 +20,7 @@ for date in df.DATE.sort_values().unique()[12:]:
     df_dt_m = calculate_momentum_signals(df_dt)
     df_dt_m = df_dt_m[df_dt_m.DATE == date]
     # Have a similar line as above but with carry fn
-    df_dt_m_c = ...
+    df_dt_m_c = calculate_carry_signals(df_dt_m)
     # Have a similar line as above but with value fn
     df_dt_m_c_v = ...
     # Have a similar line as above but with quality fn
@@ -28,9 +28,9 @@ for date in df.DATE.sort_values().unique()[12:]:
     # Have a similar line as above but with X creative_factor fn
     df_dt_m_c_v_q_x = ...
 
-    # 2. If Z-Score not calculate previous then do so. If done already, move on.
+    # 2. Combine Z-Scores for each style theme (equally weighted?)
 
-    # 3. Combine factors Z-Scores.
+    # 3. Combine all Style combined Z-Scores on to one - optimization?
 
     # 4. Fn to implement logic to pick top ranked scores and provide weights for all bonds in a given month
     df_dt_m_c_v_q_x['portfolio_wght'] = ...
