@@ -94,4 +94,4 @@ def quality_calc(df):
     # this will be our measure of quality
     df['quality'] = df.groupby(['DATE','HSICCD'])['leverage'].apply(lambda x: z_score(x))
     
-    return(df[["DATE","ISIN","quality"]])
+    return(df)
