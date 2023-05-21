@@ -3,18 +3,22 @@ import pandas as pd
 from carry import calculate_carry_signals
 from momentum import calculate_momentum_signals
 
+
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
-REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'return_excess_by_duration']
+REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration']
 
 DIR = 'INPUT_FILE_DIR_FROM_YOUR_LOCAL'
 
-df = pd.read_sas(DIR).loc[:,REL_COL]
+df_data = pd.read_sas(DIR).loc[:,REL_COL]
+df_data = df_data[df_data['datadate'].notna()]
+
+df_data['sector'] = df_data['HSICCD'].astype(str).str[0]
 
 dict_mom = {}
 l_df = []
-for date in df.DATE.sort_values().unique()[12:]:
+for date in df_data.DATE.sort_values().unique()[12:]:
     date_prev = date - pd.DateOffset(years=1, months=3)
-    df_dt = df[(df.DATE > date_prev) & (df.DATE <= date)].copy() # For momentum signal calculation we require trailing dates.
+    df_dt = df_data[(df_data.DATE > date_prev) & (df_data.DATE <= date)].copy() # For momentum signal calculation we require trailing dates.
 
     # 1. Calculation of signals (should it be raw or output directly Z-score?)
     df_dt_m = calculate_momentum_signals(df_dt)
@@ -28,13 +32,11 @@ for date in df.DATE.sort_values().unique()[12:]:
     # Have a similar line as above but with X creative_factor fn
     df_dt_m_c_v_q_x = ...
 
-    # 2. Combine Z-Scores for each style theme (equally weighted?)
+    # 2. Combine all Style combined Z-Scores on to one
 
-    # 3. Combine all Style combined Z-Scores on to one - optimization?
-
-    # 4. Fn to implement logic to pick top ranked scores and provide weights for all bonds in a given month
+    # 3. Fn to implement logic to pick top ranked scores and provide weights for all bonds in a given month
     df_dt_m_c_v_q_x['portfolio_wght'] = ...
-    # 5. Calculate market cap weight for benchmark calculations later on
+    # 4. Calculate market cap weight for benchmark calculations later on
     df_dt_m_c_v_q_x['market_wght'] = \
         df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING']/df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING']
 
