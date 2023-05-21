@@ -2,7 +2,7 @@
 # import numpy as np
 # import os
 import pandas as pd
-
+import numpy as np
 from utils import z_score
 
 # # this assumes you're working on the wrds server and you've already run
