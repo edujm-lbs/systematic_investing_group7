@@ -1,33 +1,36 @@
+# import pandas as pd
+# import numpy as np
+# import os
 import pandas as pd
-import numpy as np
-import os
 
-# this assumes you're working on the wrds server and you've already run
-# the initial sample creation script
-# change this to your username
-username = "yourusername"
+from utils import z_score
 
-# set working directory
-os.chdir(f"/home/lbs/{username}/E499_Group_Project/data/")
+# # this assumes you're working on the wrds server and you've already run
+# # the initial sample creation script
+# # change this to your username
+# username = "yourusername"
 
-def z_score(x):
-    """
-    used to calculate z-scores
-    """
-    return (x - np.mean(x)) / np.std(x)
+# # set working directory
+# os.chdir(f"/home/lbs/{username}/E499_Group_Project/data/")
+
+# def z_score(x):
+#     """
+#     used to calculate z-scores
+#     """
+#     return (x - np.mean(x)) / np.std(x)
   
-# name of the sample file
-sasdb = "bondret_data17e.sas7bdat"
+# # name of the sample file
+# sasdb = "bondret_data17e.sas7bdat"
 
-data = pd.read_sas(sasdb)
+# data = pd.read_sas(sasdb)
 
-# drop values where there's no datadate
-# this is what what was done in the example SAS script
-data = data[data['datadate'].notna()]
+# # drop values where there's no datadate
+# # this is what what was done in the example SAS script
+# data = data[data['datadate'].notna()]
 
-# create sector
-# directly from SAS script
-data['sector'] = data['HSICCD'].astype(str).str[0]
+# # create sector
+# # directly from SAS script
+# data['sector'] = data['HSICCD'].astype(str).str[0]
 
 ################################################################################################################
 # NOTES ON QUALITY
@@ -56,19 +59,39 @@ data['sector'] = data['HSICCD'].astype(str).str[0]
 # and probability of default
 # neither of these were as efficacious as just looking at leverage
 
-# first, replace all instances of short term and debt term debt that are missing with 0
-data['dlc'].fillna(0, inplace=True) # current debt
-data['dltt'].fillna(0, inplace=True) # long-term debt
-data['mib'].fillna(0, inplace=True) # minority interest
-data['upstk'].fillna(0, inplace=True) # preferred stock
-data['che'].fillna(0, inplace=True) # cash and cash equivalents
+# # first, replace all instances of short term and debt term debt that are missing with 0
+# data['dlc'].fillna(0, inplace=True) # current debt
+# data['dltt'].fillna(0, inplace=True) # long-term debt
+# data['mib'].fillna(0, inplace=True) # minority interest
+# data['upstk'].fillna(0, inplace=True) # preferred stock
+# data['che'].fillna(0, inplace=True) # cash and cash equivalents
 
-# now calculate our revised measure of total debt
-data['total_debt'] = np.where(data.dt.isnull(), data.dlc + data.dltt, data.dt)
+# # now calculate our revised measure of total debt
+# data['total_debt'] = np.where(data.dt.isnull(), data.dlc + data.dltt, data.dt)
 
-# calculate leverage
-data['leverage'] = (data['total_debt'] + data['mib'] + data['upstk'] - data['che']) / (data['total_debt'] - data['che'] + data['mv'])
+# # calculate leverage
+# data['leverage'] = (data['total_debt'] + data['mib'] + data['upstk'] - data['che']) / (data['total_debt'] - data['che'] + data['mv'])
 
-# use our z-score function to calculate a sector-neutral z-score
-# this will be our measure of quality
-data['quality'] = data.groupby(['DATE','sector'])['leverage'].apply(lambda x: z_score(x))
+# # use our z-score function to calculate a sector-neutral z-score
+# # this will be our measure of quality
+# data['quality'] = data.groupby(['DATE','sector'])['leverage'].apply(lambda x: z_score(x))
+
+def quality_calc(df):
+    # first, replace all instances of short term and debt term debt that are missing with 0
+    df['dlc'].fillna(0, inplace=True) # current debt
+    df['dltt'].fillna(0, inplace=True) # long-term debt
+    df['mib'].fillna(0, inplace=True) # minority interest
+    df['upstk'].fillna(0, inplace=True) # preferred stock
+    df['che'].fillna(0, inplace=True) # cash and cash equivalents
+
+    # now calculate our revised measure of total debt
+    df['total_debt'] = np.where(df.dt.isnull(), df.dlc + df.dltt, df.dt)
+
+    # calculate leverage
+    df['leverage'] = (df['total_debt'] + df['mib'] + df['upstk'] - df['che']) / (df['total_debt'] - df['che'] + df['mv'])
+
+    # use our z-score function to calculate a sector-neutral z-score
+    # this will be our measure of quality
+    df['quality'] = df.groupby(['DATE','HSICCD'])['leverage'].apply(lambda x: z_score(x))
+    
+    return(df[["DATE","ISIN","quality"]])
