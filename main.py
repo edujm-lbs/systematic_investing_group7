@@ -14,6 +14,9 @@ df_data = df_data[df_data['datadate'].notna()]
 
 df_data['sector'] = df_data['HSICCD'].astype(str).str[0]
 
+# required for plots output later on
+data["DTS"] = data["DURATION"] * data["SPREAD_yield"]
+
 dict_mom = {}
 l_df = []
 for date in df_data.DATE.sort_values().unique()[12:]:
@@ -28,7 +31,7 @@ for date in df_data.DATE.sort_values().unique()[12:]:
     # Have a similar line as above but with value fn
     df_dt_m_c_v = ...
     # Have a similar line as above but with quality fn
-    df_dt_m_c_v_q = ...
+    df_dt_m_c_v_q = quality_calc(df_dt_m_c_v)
     # Have a similar line as above but with X creative_factor fn
     df_dt_m_c_v_q_x = ...
 
@@ -38,7 +41,7 @@ for date in df_data.DATE.sort_values().unique()[12:]:
     df_dt_m_c_v_q_x['portfolio_wght'] = ...
     # 4. Calculate market cap weight for benchmark calculations later on
     df_dt_m_c_v_q_x['market_wght'] = \
-        df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING']/df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING']
+        df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING']/sum(df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING'])
 
     l_df.append(df_dt_m_c_v_q_x)
 
