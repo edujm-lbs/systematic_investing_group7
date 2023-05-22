@@ -16,7 +16,7 @@ df_data = df_data[df_data['datadate'].notna()]
 df_data['sector'] = df_data['HSICCD'].astype(str).str[0]
 
 # required for plots output later on
-data["DTS"] = data["DURATION"] * data["SPREAD_yield"]
+df_data["DTS"] = df_data["DURATION"] * df_data["SPREAD_yield"]
 
 dict_mom = {}
 l_df = []
