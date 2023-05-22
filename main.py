@@ -6,7 +6,7 @@ from quality import quality_calc
 from optim import get_optim_ports
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
-REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration', 'gp', 'at', 'dt', 'dlc', 'dltt', 'mib', 'upstk', 'che']
+REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration', 'gp', 'at', 'dt', 'dlc', 'dltt', 'mib', 'upstk', 'che', 'datadate', 'HSICCD', 'lead_EXCESS_RET', 'lead_TOT_RET']
 
 DIR = 'INPUT_FILE_DIR_FROM_YOUR_LOCAL'
 
@@ -16,7 +16,7 @@ df_data = df_data[df_data['datadate'].notna()]
 df_data['sector'] = df_data['HSICCD'].astype(str).str[0]
 
 # required for plots output later on
-data["DTS"] = data["DURATION"] * data["SPREAD_yield"]
+df_data["DTS"] = df_data["DURATION"] * df_data["SPREAD_yield"]
 
 dict_mom = {}
 l_df = []
@@ -42,7 +42,7 @@ for date in df_data.DATE.sort_values().unique()[12:]:
     df_dt_m_c_v_q_x['portfolio_wght'] = ...
     # if we're looking to optimize our combined z-scores we could use the below function
     # this should produce a dataframe will all the necessary fields for the plots we need to create later on
-    # df_for_plots = get_optim_ports(data=df_dt_m_c_v_q_x, max_wgt=0.05, sector_bound=0.05, credit_bound=0.05, duration_bound=2)
+    # df_for_plots = get_optim_ports(data=df_dt_m_c_v_q_x, max_wgt=0.05, sector_bound=0.05, credit_bound=0.05, duration_bound=2, dts_bound=0.03)
     
     # 4. Calculate market cap weight for benchmark calculations later on
     df_dt_m_c_v_q_x['market_wght'] = \

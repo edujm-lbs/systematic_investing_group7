@@ -3,7 +3,7 @@ import numpy as np
 from scipy.optimize import linprog
 from itertools import repeat
 
-def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound):
+def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound, dts_bound):
   """
   this will return a dataframe of the optimal portfolio, along weight the market weighted
   benchmark for each date in your dataframe
@@ -88,6 +88,20 @@ def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound):
     duration_rhs_u = np.array([duration_rhs + duration_bound])
     duration_rhs_d = np.array([duration_rhs - duration_bound])
 
+    # DTS
+    # lhs
+    dts = this_months_holdings_df["DTS"].to_numpy()
+    dts_lhs = np.transpose(np.atleast_2d(dts).T)
+    
+    # rhs
+    dts_rhs = this_months_holdings_df[["ISIN","MARKET_WEIGHT_B","DTS"]]
+    dts_rhs["contrib"] = dts_rhs["MARKET_WEIGHT_B"] * dts_rhs["DTS"]
+    dts_rhs = dts_rhs["contrib"].sum()
+    
+    # bounds
+    dts_rhs_u = np.array([dts_rhs + dts_bound])
+    dts_rhs_d = np.array([dts_rhs - dts_bound])
+    
     # weights must sum to 1
     # lhs
     sum_to_one_lhs = this_months_holdings_df["one"].to_numpy()
@@ -113,14 +127,18 @@ def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound):
                     credit_lhs,
                     credit_lhs * -1, # for the lower bound
                     duration_lhs,
-                    duration_lhs * -1), axis=0)
+                    duration_lhs * -1, # for the lower bound
+                    dts_lhs,
+                    dts_lhs * -1), axis=0)
 
     rhs_ineq = np.concatenate((sector_rhs_u,
                                sector_rhs_d * -1,
                                credit_rhs_u,
                                credit_rhs_d * -1,
                                duration_rhs_u,
-                               duration_rhs_u * -1), axis=0)
+                               duration_rhs_u * -1,
+                               dts_rhs_u,
+                               dts_rhs_d * -1), axis=0)
 
     # the lhs must have 2 dimensions
     rhs_ineq = np.expand_dims(rhs_ineq, axis=1)
