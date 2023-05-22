@@ -17,5 +17,6 @@ def calculate_carry_signals(df):
     pandas.DataFrame
         Same dataframe inputted but with extra columns for carry signal calculated.
     """
-    df['carry_score'] = z_score(df['SPREAD_yield'].to_numpy()).fillna(0, inplace=True)
+    df['carry_score'] = df.groupby(['DATE','sector'])['SPREAD_yield'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
+    
     return df
