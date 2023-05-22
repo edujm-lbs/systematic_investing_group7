@@ -6,7 +6,7 @@ from quality import quality_calc
 from optim import get_optim_ports
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
-REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration', 'gp', 'at', 'dt', 'dlc', 'dltt', 'mib', 'upstk', 'che']
+REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration', 'gp', 'at', 'dt', 'dlc', 'dltt', 'mib', 'upstk', 'che', 'datadate', 'HSICCD', 'lead_EXCESS_RET', 'lead_TOT_RET']
 
 DIR = 'INPUT_FILE_DIR_FROM_YOUR_LOCAL'
 
