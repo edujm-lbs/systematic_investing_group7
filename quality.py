@@ -47,6 +47,6 @@ def quality_calc(df):
 
   # combine our measures into a single quality factor
   number_of_measures = 2
-  df['quality'] = (df['leverage_z'] + df['profit_z']) / 2
+  df['quality'] = (df['leverage_z'] + df['profit_z']) / number_of_measures
 
   return(df)
