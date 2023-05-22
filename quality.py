@@ -36,14 +36,14 @@ def quality_calc(df):
 
   # use our z-score function to calculate a sector-neutral z-score
   # note that we multiply by -1 because we want lower leverage
-  df['leverage_z'] = df.groupby(['DATE','HSICCD'])['leverage'].apply(lambda x: z_score(x)).fillna(0, inplace=True) * -1
+  df['leverage_z'] = df.groupby(['DATE','sector'])['leverage'].apply(lambda x: z_score(x)).fillna(0, inplace=True) * -1
 
   # calculate gross profit according to Novy-Marx
   # gross profit scaled by total assets
   df['profit'] = df['gp'] / df['at']
 
   # profit in z-score terms
-  df['profit_z'] = df.groupby(['DATE','HSICCD'])['profit'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
+  df['profit_z'] = df.groupby(['DATE','sector'])['profit'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
 
   # combine our measures into a single quality factor
   number_of_measures = 2
