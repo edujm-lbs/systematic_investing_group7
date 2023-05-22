@@ -37,7 +37,13 @@ def quality_calc(df):
   # use our z-score function to calculate a sector-neutral z-score
   # note that we multiply by -1 because we want lower leverage
   df['leverage_z'] = df.groupby(['DATE','sector'])['leverage'].apply(lambda x: z_score(x)).fillna(0, inplace=True) * -1
-
+  # there may be some obs that have zero debt after this
+  # this wouldn't make sense because all these firms are issuing debt so they should have debt
+  # we'll replace the z-score with 0 if the total debt is zero
+  # this will slightly throw off our z-score but it shouldn't have that big of an impact because there
+  # are only 1,070 obs where this happens out of ~400,000
+  df['leverage_z'] = np.where(df.total_debt == 0, 0, df.leverage_z)
+  
   # calculate gross profit according to Novy-Marx
   # gross profit scaled by total assets
   df['profit'] = df['gp'] / df['at']
