@@ -43,7 +43,7 @@ def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound):
     print(my_date)
     # just take the columns we care about
     this_months_holdings_df = data[data['DATE'] == my_date]
-    this_months_holdings_df = this_months_holdings_df[["ISIN", "HSICCD", "score", "AMOUNT_OUTSTANDING", "YEAR_MONTH_d", "DATE", "SPREAD_yield", "lead_TOT_RET", "lead_EXCESS_RET", "MATURITY_yrs", "DURATION", "T_Spread", "YIELD", "TMT", "R_MR",  "PRICE_EOM", "DTS"]]
+    this_months_holdings_df = this_months_holdings_df[["ISIN", "sector", "score", "AMOUNT_OUTSTANDING", "YEAR_MONTH_d", "DATE", "SPREAD_yield", "lead_TOT_RET", "lead_EXCESS_RET", "MATURITY_yrs", "DURATION", "T_Spread", "YIELD", "TMT", "R_MR",  "PRICE_EOM", "DTS"]]
     this_months_holdings_df["MARKET_WEIGHT_B"] = this_months_holdings_df["AMOUNT_OUTSTANDING"] / sum(this_months_holdings_df["AMOUNT_OUTSTANDING"])
 
     # SECTOR
@@ -52,7 +52,7 @@ def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound):
 
     # rhs
     # we're basing this off the bmk weights
-    sector_rhs = this_months_holdings_df.groupby("HSICCD")["MARKET_WEIGHT_B"].sum().sort_index().to_numpy()
+    sector_rhs = this_months_holdings_df.groupby("sector")["MARKET_WEIGHT_B"].sum().sort_index().to_numpy()
 
     # bounds
     # sector_bound = 0.05
