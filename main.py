@@ -42,7 +42,7 @@ for date in df_data.DATE.sort_values().unique()[12:]:
     df_dt_m_c_v_q_x['portfolio_wght'] = ...
     # if we're looking to optimize our combined z-scores we could use the below function
     # this should produce a dataframe will all the necessary fields for the plots we need to create later on
-    # df_for_plots = get_optim_ports(data=df_dt_m_c_v_q_x, max_wgt=0.05, sector_bound=0.05, credit_bound=0.05, duration_bound=2)
+    # df_for_plots = get_optim_ports(data=df_dt_m_c_v_q_x, max_wgt=0.05, sector_bound=0.05, credit_bound=0.05, duration_bound=2, dts_bound=0.03)
     
     # 4. Calculate market cap weight for benchmark calculations later on
     df_dt_m_c_v_q_x['market_wght'] = \
