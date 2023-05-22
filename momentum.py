@@ -26,11 +26,11 @@ def calculate_momentum_signals(df):
     for _isin in df.ISIN.unique():
         df_isin = df[df.ISIN == _isin].copy().sort_values('DATE')
         df_isin['mom_spread_3'] = df_isin['SPREAD_yield'].diff(periods=3)
-        df_isin['mom_spread_3_score'] = df_isin.groupby(['Sector'])['mom_spread_3'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
+        df_isin['mom_spread_3_score'] = df_isin.groupby(['sector'])['mom_spread_3'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
         df_isin['mom_spread_6'] = df_isin['SPREAD_yield'].diff(periods=6)
-        df_isin['mom_spread_6_score'] = df_isin.groupby(['Sector'])['mom_spread_6'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
+        df_isin['mom_spread_6_score'] = df_isin.groupby(['sector'])['mom_spread_6'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
         df_isin['mom_spread_12_m_1'] = df_isin['SPREAD_yield'].diff(periods=11).shift(1)
-        df_isin['mom_spread_12_m_1_score'] = df_isin.groupby(['Sector'])['mom_spread_12_m_1'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
+        df_isin['mom_spread_12_m_1_score'] = df_isin.groupby(['sector'])['mom_spread_12_m_1'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
         df_isin['momentum_score'] = df_isin[['mom_spread_3_score', 'mom_spread_6_score', 'mom_spread_12_m_1_score']].mean(axis=1).values
         l_df.append(df_isin)
     return pd.concat(l_df)
