@@ -2,7 +2,8 @@ import pandas as pd
 
 from carry import calculate_carry_signals
 from momentum import calculate_momentum_signals
-
+from quality import quality_calc
+from optim import get_optim_ports
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
 REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration', 'gp', 'at', 'dt', 'dlc', 'dltt', 'mib', 'upstk', 'che']
@@ -39,6 +40,10 @@ for date in df_data.DATE.sort_values().unique()[12:]:
 
     # 3. Fn to implement logic to pick top ranked scores and provide weights for all bonds in a given month
     df_dt_m_c_v_q_x['portfolio_wght'] = ...
+    # if we're looking to optimize our combined z-scores we could use the below function
+    # this should produce a dataframe will all the necessary fields for the plots we need to create later on
+    # df_for_plots = get_optim_ports(data=df_dt_m_c_v_q_x, max_wgt=0.05, sector_bound=0.05, credit_bound=0.05, duration_bound=2)
+    
     # 4. Calculate market cap weight for benchmark calculations later on
     df_dt_m_c_v_q_x['market_wght'] = \
         df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING']/sum(df_dt_m_c_v_q_x['AMOUNT_OUTSTANDING'])
