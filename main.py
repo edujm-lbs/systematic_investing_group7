@@ -5,7 +5,7 @@ from momentum import calculate_momentum_signals
 
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
-REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration']
+REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_YIELD', 'return_excess_by_duration', 'gp', 'at', 'dt', 'dlc', 'dltt', 'mib', 'upstk', 'che']
 
 DIR = 'INPUT_FILE_DIR_FROM_YOUR_LOCAL'
 
