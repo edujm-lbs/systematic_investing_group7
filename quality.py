@@ -1,6 +1,6 @@
-import pandas as pd
 import numpy as np
 from utils import z_score
+
 
 def quality_calc(df):
   """
@@ -25,34 +25,31 @@ def quality_calc(df):
   df['mib'].fillna(0, inplace=True) # minority interest
   df['upstk'].fillna(0, inplace=True) # preferred stock
   df['che'].fillna(0, inplace=True) # cash and cash equivalents
-
   # now calculate our revised measure of total debt
   # we'll use there measure of total debt where we have it
   # otherwise use ours
   df['total_debt'] = np.where(df.dt.isnull(), df.dlc + df.dltt, df.dt)
-
   # calculate leverage
   df['leverage'] = (df['total_debt'] + df['mib'] + df['upstk'] - df['che']) / (df['total_debt'] - df['che'] + df['mv'])
-
   # use our z-score function to calculate a sector-neutral z-score
   # note that we multiply by -1 because we want lower leverage
-  df['leverage_z'] = df.groupby(['DATE','sector'])['leverage'].apply(lambda x: z_score(x)).fillna(0, inplace=True) * -1
+  df['leverage_z_sa'] = df.groupby(['sector'])['leverage'].apply(z_score).fillna(0) * -1
+  df['leverage_z'] = z_score(df['leverage']).fillna(0) * -1
   # there may be some obs that have zero debt after this
   # this wouldn't make sense because all these firms are issuing debt so they should have debt
   # we'll replace the z-score with 0 if the total debt is zero
   # this will slightly throw off our z-score but it shouldn't have that big of an impact because there
   # are only 1,070 obs where this happens out of ~400,000
+  df['leverage_z_sa'] = np.where(df.total_debt == 0, 0, df.leverage_z_sa)
   df['leverage_z'] = np.where(df.total_debt == 0, 0, df.leverage_z)
-  
   # calculate gross profit according to Novy-Marx
   # gross profit scaled by total assets
   df['profit'] = df['gp'] / df['at']
-
   # profit in z-score terms
-  df['profit_z'] = df.groupby(['DATE','sector'])['profit'].apply(lambda x: z_score(x)).fillna(0, inplace=True)
-
+  df['profit_z_sa'] = df.groupby(['sector'])['profit'].apply(z_score).fillna(0)
+  df['profit_z'] = z_score(df['profit']).fillna(0)
   # combine our measures into a single quality factor
   number_of_measures = 2
-  df['quality'] = (df['leverage_z'] + df['profit_z']) / number_of_measures
-
+  df['quality_score_sa'] = (df['leverage_z_sa'] + df['profit_z_sa']) / number_of_measures
+  df['quality_score'] = (df['leverage_z'] + df['profit_z']) / number_of_measures
   return(df)

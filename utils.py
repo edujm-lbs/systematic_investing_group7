@@ -4,6 +4,8 @@ import numpy as np
 COL_FACTORS_NAME = ['mom_spread_6_score', 'mom_spread_12_m_1_score',
                     'mom_spread_6_score_sa', 'mom_spread_12_m_1_score_sa',
                     'leverage_z', 'leverage_z_sa', 'profit_z', 'profit_z_sa',
+                    'spread_to_pd_res_score', 'spread_to_pd_res_score_sa',
+                    'value_reg_richness_score', 'value_reg_richness_score_sa',
                     'momentum_score', 'carry_score', 'quality_score', 'value_score',
                     'combined_score', 'momentum_score_sa', 'carry_score_sa', 'quality_score_sa', 
                     'value_score_sa', 'combined_score_sa']
