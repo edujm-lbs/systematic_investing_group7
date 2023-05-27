@@ -12,7 +12,7 @@ from value import calculate_value_signals
 REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_yield',
            'return_excess_by_duration', 'datadate', 'HSICCD', 'dlc', 'dltt',
            'mib', 'upstk', 'che', 'mv', 'dt', 'gp', 'at', 'ret_var_movstd_yrl',
-           'mkvalt', 'DURATION', 'TMT', 'N_SP']
+           'mkvalt', 'DURATION', 'TMT', 'N_SP', 'lead_EXCESS_RET', 'lead_TOT_RET']
 
 DIR = 'bondret_data17e.sas7bdat'
 
@@ -25,7 +25,7 @@ df_data['TMT_2'] = df_data['TMT'] ** 2
 
 l_df = []
 for date in df_data.DATE.sort_values().unique()[13:]:
-    print(date)
+    print(date.date())
     date_prev = date - np.timedelta64(500, 'D')
     # For momentum signal calculation we require trailing dates.
     df_dt = df_data[(df_data.DATE > date_prev) & (df_data.DATE <= date)].copy()
@@ -68,10 +68,10 @@ COL_RET = ['mom_spread_6_score_ret_ew', 'mom_spread_6_score_ret_sw', 'mom_spread
            'profit_z_sa_ret_ew', 'profit_z_sa_ret_sw', 'profit_z_sa_ret_mw',
            'quality_score_ret_ew', 'quality_score_ret_sw', 'quality_score_ret_mw',
            'quality_score_sa_ret_ew', 'quality_score_sa_ret_sw', 'quality_score_sa_ret_mw',
-           'spread_to_pd_res_score_ew', 'spread_to_pd_res_score_sw', 'spread_to_pd_res_score_mw',
-           'spread_to_pd_res_score_sa_ew', 'spread_to_pd_res_score_sa_sw', 'spread_to_pd_res_score_sa_mw',
-           'value_reg_richness_score_ew', 'value_reg_richness_score_sw', 'value_reg_richness_score_mw',
-           'value_reg_richness_score_sa_ew', 'value_reg_richness_score_sa_sw', 'value_reg_richness_score_sa_mw',
+           'spread_to_pd_res_score_ret_ew', 'spread_to_pd_res_score_ret_sw', 'spread_to_pd_res_score_ret_mw',
+           'spread_to_pd_res_score_sa_ret_ew', 'spread_to_pd_res_score_sa_ret_sw', 'spread_to_pd_res_score_sa_ret_mw',
+           'value_reg_richness_score_ret_ew', 'value_reg_richness_score_ret_sw', 'value_reg_richness_score_ret_mw',
+           'value_reg_richness_score_sa_ret_ew', 'value_reg_richness_score_sa_ret_sw', 'value_reg_richness_score_sa_ret_mw',
            'value_score_ret_ew', 'value_score_ret_sw', 'value_score_ret_mw',
            'value_score_sa_ret_ew', 'value_score_sa_ret_sw', 'value_score_sa_ret_mw',
            'combined_score_ret_ew', 'combined_score_ret_sw', 'combined_score_ret_mw',

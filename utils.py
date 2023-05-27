@@ -61,8 +61,8 @@ def calculate_portfolio_weights(df):
 
 def calculate_portfolio_returns(df):
     for factor in COL_FACTORS_NAME:
-        df[f'{factor}_ret_ew'] = df[f'{factor}_equally_weight'] * df.return_excess_by_duration
-        df[f'{factor}_ret_sw'] = df[f'{factor}_signal_weight'] * df.return_excess_by_duration
-        df[f'{factor}_ret_mw'] = df[f'{factor}_market_weight'] * df.return_excess_by_duration
-    df['benchmark_ret'] = df['benchmark_wght'] * df.return_excess_by_duration
+        df[f'{factor}_ret_ew'] = df[f'{factor}_equally_weight'] * df.lead_EXCESS_RET
+        df[f'{factor}_ret_sw'] = df[f'{factor}_signal_weight'] * df.lead_EXCESS_RET
+        df[f'{factor}_ret_mw'] = df[f'{factor}_market_weight'] * df.lead_EXCESS_RET
+    df['benchmark_ret'] = df['benchmark_wght'] * df.lead_EXCESS_RET
     return df
