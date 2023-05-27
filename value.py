@@ -4,7 +4,7 @@ import numpy as np
 import statsmodels.api as sm
 import pandas as pd  
 
-from utils import z_score
+from utils import calculate_dts_residuals, z_score
 
 
 def calculate_value_signals(df):
@@ -24,21 +24,25 @@ def calculate_value_signals(df):
     residual_values = reg_model.resid # residual values
     df['spread_to_pd_res'] = np.nan
     df.loc[~df.PD.isna(), 'spread_to_pd_res'] = residual_values
-    df['spread_to_pd_res_score'] = z_score(df.spread_to_pd_res).fillna(0)
-    df['spread_to_pd_res_score_sa'] = df.groupby(['sector'])['spread_to_pd_res'].apply(z_score).fillna(0)
+    s2pd_dtsa = calculate_dts_residuals(df, 'spread_to_pd_res')
+    df['spread_to_pd_res_dts'] = np.nan
+    df.loc[~df[["dts", "spread_to_pd_res"]].isna().any(axis=1), 'spread_to_pd_res_dts'] = s2pd_dtsa
+    df['spread_to_pd_res_score'] = z_score(df.spread_to_pd_res_dts).fillna(0)
+    df['spread_to_pd_res_score_sa'] = df.groupby(['sector'])['spread_to_pd_res_dts'].apply(z_score).fillna(0)
     # TMT, TMT_2, and N_SP
-    df_w_dum = pd.get_dummies(df, columns=['N_SP'], drop_first=True)
-    n_sp_dummies_col = ['N_SP_' + str(nm) for nm in pd.get_dummies(df.N_SP, drop_first=True).columns]
-    X = df_w_dum[["TMT", "TMT_2"] + n_sp_dummies_col]
-    y = df_w_dum["SPREAD_yield"]
+    X = df[["TMT", "TMT_2", "N_SP"]]
+    y = df["SPREAD_yield"]
     X = sm.add_constant(X)
     reg_model = sm.OLS(y, X, missing='drop').fit()
     predicted_spread = reg_model.predict()
-    df_w_dum['value_reg_richness'] = np.nan
-    df_w_dum.loc[~df_w_dum[["TMT", "TMT_2"]+ n_sp_dummies_col].isna().any(axis=1), 'value_reg_richness'] = predicted_spread
-    df_w_dum['value_reg_richness'] = df_w_dum['value_reg_richness'] - df_w_dum['SPREAD_yield']
-    df_w_dum['value_reg_richness_score_sa'] = df_w_dum.groupby(['sector'])['value_reg_richness'].apply(z_score).fillna(0)
-    df_w_dum['value_reg_richness_score'] = z_score(df_w_dum['value_reg_richness']).fillna(0)
-    df_w_dum['value_score_sa'] = df_w_dum[['value_reg_richness_score_sa', 'spread_to_pd_res_score_sa']].mean(axis=1).values
-    df_w_dum['value_score'] = df_w_dum[['value_reg_richness_score', 'spread_to_pd_res_score']].mean(axis=1).values
-    return df_w_dum
+    df['value_reg_richness'] = np.nan
+    df.loc[~df[["TMT", "TMT_2", "N_SP"]].isna().any(axis=1), 'value_reg_richness'] = predicted_spread
+    df['value_reg_richness'] = df['value_reg_richness'] - df['SPREAD_yield']
+    val_richness_dtsa = calculate_dts_residuals(df, 'value_reg_richness')
+    df['value_reg_richness_dts'] = np.nan
+    df.loc[~df[["dts", "value_reg_richness"]].isna().any(axis=1), 'value_reg_richness_dts'] = val_richness_dtsa
+    df['value_reg_richness_score_sa'] = df.groupby(['sector'])['value_reg_richness_dts'].apply(z_score).fillna(0) * -1
+    df['value_reg_richness_score'] = z_score(df['value_reg_richness_dts']).fillna(0) * -1
+    df['value_score_sa'] = df[['value_reg_richness_score_sa', 'spread_to_pd_res_score_sa']].mean(axis=1).values
+    df['value_score'] = df[['value_reg_richness_score', 'spread_to_pd_res_score']].mean(axis=1).values
+    return df
