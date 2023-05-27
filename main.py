@@ -38,16 +38,16 @@ for date in df_data.DATE.sort_values().unique()[13:]:
     # Value
     df_dt_m_c_q_v = calculate_value_signals(df_dt_m_c_q)
     # 2. Combine all Style combined Z-Scores on to one
-    df_dt_m_c_q['combined_score'] = \
-        df_dt_m_c_q[['momentum_score', 'carry_score', 'quality_score', 'value_score']].mean(axis=1)
-    df_dt_m_c_q['combined_score_sa'] = \
-        df_dt_m_c_q[['momentum_score_sa', 'carry_score_sa', 'quality_score_sa', 'value_score_sa']].mean(axis=1)
+    df_dt_m_c_q_v['combined_score'] = \
+        df_dt_m_c_q_v[['momentum_score', 'carry_score', 'quality_score', 'value_score']].mean(axis=1)
+    df_dt_m_c_q_v['combined_score_sa'] = \
+        df_dt_m_c_q_v[['momentum_score_sa', 'carry_score_sa', 'quality_score_sa', 'value_score_sa']].mean(axis=1)
     # 3. Fn to implement logic to pick top ranked scores and provide weights for all bonds in a given month
-    df_dt_m_c_q_w = calculate_portfolio_weights(df_dt_m_c_q)
+    df_dt_m_c_q_v_w = calculate_portfolio_weights(df_dt_m_c_q_v)
     # 4. Calculate market cap weight for benchmark calculations later on
-    df_dt_m_c_q_w['benchmark_wght'] = \
-        df_dt_m_c_q_w['AMOUNT_OUTSTANDING'] / df_dt_m_c_q_w['AMOUNT_OUTSTANDING'].sum()
-    l_df.append(df_dt_m_c_q_w)
+    df_dt_m_c_q_v_w['benchmark_wght'] = \
+        df_dt_m_c_q_v_w['AMOUNT_OUTSTANDING'] / df_dt_m_c_q_v_w['AMOUNT_OUTSTANDING'].sum()
+    l_df.append(df_dt_m_c_q_v_w)
 
 df_final = pd.concat(l_df)
 
