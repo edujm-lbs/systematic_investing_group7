@@ -25,7 +25,7 @@ df_data['TMT_2'] = df_data['TMT'] ** 2
 
 l_df = []
 for date in df_data.DATE.sort_values().unique()[13:]:
-    print(date.date())
+    print(date)
     date_prev = date - np.timedelta64(500, 'D')
     # For momentum signal calculation we require trailing dates.
     df_dt = df_data[(df_data.DATE > date_prev) & (df_data.DATE <= date)].copy()

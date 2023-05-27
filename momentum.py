@@ -30,6 +30,7 @@ def calculate_momentum_signals(df, date):
         df_isin['mom_spread_12_m_1'] = df_isin['SPREAD_yield'].diff(periods=11).shift(1)
         l_df.append(df_isin)
     df_out = pd.concat(l_df)
+    df_out = df_out[df_out.DATE == date]
     df_out['mom_spread_6_score_sa'] = df_out.groupby(['sector'])['mom_spread_6'].apply(z_score).fillna(0)
     df_out['mom_spread_6_score'] = z_score(df_out['mom_spread_6']).fillna(0)
     df_out['mom_spread_12_m_1_score_sa'] = df_out.groupby(['sector'])['mom_spread_12_m_1'].apply(z_score).fillna(0)
