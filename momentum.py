@@ -24,7 +24,7 @@ def calculate_momentum_signals(df, date):
         Same dataframe inputted but with extra columns for momentum signals calculated.
     """
     l_df = []
-    for _isin in df.ISIN.unique():
+    for _isin in df.CUSIP.unique():
         df_isin = df[df.ISIN == _isin].copy().sort_values('DATE')
         df_isin['mom_spread_6'] = df_isin['SPREAD_yield'].diff(periods=6)
         df_isin['mom_spread_12_m_1'] = df_isin['SPREAD_yield'].diff(periods=11).shift(1)
