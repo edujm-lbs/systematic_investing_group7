@@ -1,6 +1,8 @@
+import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 
-from utils import z_score
+from utils import calculate_dts_residuals, z_score
 
 
 def calculate_momentum_signals(df, date):
@@ -21,18 +23,22 @@ def calculate_momentum_signals(df, date):
     pandas.DataFrame
         Same dataframe inputted but with extra columns for momentum signals calculated.
     """
-    l_df = []
-    for _isin in df.ISIN.unique():
-        df_isin = df[df.ISIN == _isin].copy().sort_values('DATE')
-        df_isin['mom_spread_6'] = df_isin['SPREAD_yield'].diff(periods=6)
-        df_isin['mom_spread_12_m_1'] = df_isin['SPREAD_yield'].diff(periods=11).shift(1)
-        l_df.append(df_isin)
-    df_out = pd.concat(l_df)
-    df_out = df_out[df_out.DATE == date]
-    df_out['mom_spread_6_score_sa'] = df_out.groupby(['sector'])['mom_spread_6'].apply(z_score).fillna(0)
-    df_out['mom_spread_6_score'] = z_score(df_out['mom_spread_6']).fillna(0)
-    df_out['mom_spread_12_m_1_score_sa'] = df_out.groupby(['sector'])['mom_spread_12_m_1'].apply(z_score).fillna(0)
-    df_out['mom_spread_12_m_1_score'] = z_score(df_out['mom_spread_12_m_1']).fillna(0)
-    df_out['momentum_score_sa'] = df_out[['mom_spread_6_score_sa', 'mom_spread_12_m_1_score_sa']].mean(axis=1).values
-    df_out['momentum_score'] = df_out[['mom_spread_6_score', 'mom_spread_12_m_1_score']].mean(axis=1).values
-    return df_out
+    df['mom_spread_6'] = df.sort_values(['DATE']).groupby(['CUSIP'])['SPREAD_yield'].diff(6)
+    df['mom_spread_12_m_1'] = df.sort_values(['DATE']).groupby(['CUSIP'])['SPREAD_yield'].diff(periods=11).shift(1)
+    df = df[df.DATE == date]
+    # Calc for 6m spread momentum
+    mom_spread_6_dtsa = calculate_dts_residuals(df, 'mom_spread_6')
+    df['mom_spread_6_dts'] = np.nan
+    df.loc[~df[["dts", "mom_spread_6"]].isna().any(axis=1), 'mom_spread_6_dts'] = mom_spread_6_dtsa
+    df['mom_spread_6_score_sa'] = df.groupby(['sector'])['mom_spread_6_dts'].apply(z_score).fillna(0)
+    df['mom_spread_6_score'] = z_score(df['mom_spread_6_dts']).fillna(0)
+    # Calc for 12m spread momentum
+    mom_spread_12_m_1_dtsa = calculate_dts_residuals(df, 'mom_spread_12_m_1')
+    df['mom_spread_12_m_1_dts'] = np.nan
+    df.loc[~df[["dts", "mom_spread_12_m_1"]].isna().any(axis=1), 'mom_spread_12_m_1_dts'] = mom_spread_12_m_1_dtsa
+    df['mom_spread_12_m_1_score_sa'] = df.groupby(['sector'])['mom_spread_12_m_1_dts'].apply(z_score).fillna(0)
+    df['mom_spread_12_m_1_score'] = z_score(df['mom_spread_12_m_1_dts']).fillna(0)
+    # Combining scores
+    df['momentum_score_sa'] = df[['mom_spread_6_score_sa', 'mom_spread_12_m_1_score_sa']].mean(axis=1).values
+    df['momentum_score'] = df[['mom_spread_6_score', 'mom_spread_12_m_1_score']].mean(axis=1).values
+    return df

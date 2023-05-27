@@ -9,10 +9,10 @@ from value import calculate_value_signals
 
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
-REL_COL = ['DATE', 'ISIN', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_yield',
+REL_COL = ['DATE', 'CUSIP', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_yield',
            'return_excess_by_duration', 'datadate', 'HSICCD', 'dlc', 'dltt',
            'mib', 'upstk', 'che', 'mv', 'dt', 'gp', 'at', 'ret_var_movstd_yrl',
-           'mkvalt', 'DURATION']
+           'mkvalt', 'DURATION', 'TMT', 'N_SP', 'lead_EXCESS_RET', 'lead_TOT_RET']
 
 DIR = 'bondret_data17e.sas7bdat'
 
@@ -21,6 +21,7 @@ df_data = df_data[df_data['datadate'].notna()]
 
 df_data['sector'] = df_data['HSICCD'].astype(str).str[0]
 df_data['dts'] = df_data['DURATION'] * df_data['SPREAD_yield']
+df_data['TMT_2'] = df_data['TMT'] ** 2
 
 l_df = []
 for date in df_data.DATE.sort_values().unique()[13:]:
@@ -37,42 +38,65 @@ for date in df_data.DATE.sort_values().unique()[13:]:
     # Value
     df_dt_m_c_q_v = calculate_value_signals(df_dt_m_c_q)
     # 2. Combine all Style combined Z-Scores on to one
-    df_dt_m_c_q['combined_score'] = \
-        df_dt_m_c_q[['momentum_score', 'carry_score', 'quality_score', 'value_score']].mean(axis=1)
-    df_dt_m_c_q['combined_score_sa'] = \
-        df_dt_m_c_q[['momentum_score_sa', 'carry_score_sa', 'quality_score_sa', 'value_score_sa']].mean(axis=1)
-    df_dt_m_c_q.to_csv('df.csv')
+    df_dt_m_c_q_v['combined_score'] = \
+        df_dt_m_c_q_v[['momentum_score', 'carry_score', 'quality_score', 'value_score']].mean(axis=1)
+    df_dt_m_c_q_v['combined_score_sa'] = \
+        df_dt_m_c_q_v[['momentum_score_sa', 'carry_score_sa', 'quality_score_sa', 'value_score_sa']].mean(axis=1)
     # 3. Fn to implement logic to pick top ranked scores and provide weights for all bonds in a given month
-    df_dt_m_c_q_w = calculate_portfolio_weights(df_dt_m_c_q)
+    df_dt_m_c_q_v_w = calculate_portfolio_weights(df_dt_m_c_q_v)
     # 4. Calculate market cap weight for benchmark calculations later on
-    df_dt_m_c_q_w['benchmark_wght'] = \
-        df_dt_m_c_q_w['AMOUNT_OUTSTANDING'] / df_dt_m_c_q_w['AMOUNT_OUTSTANDING'].sum()
-    l_df.append(df_dt_m_c_q_w)
+    df_dt_m_c_q_v_w['benchmark_wght'] = \
+        df_dt_m_c_q_v_w['AMOUNT_OUTSTANDING'] / df_dt_m_c_q_v_w['AMOUNT_OUTSTANDING'].sum()
+    l_df.append(df_dt_m_c_q_v_w)
 
 df_final = pd.concat(l_df)
 
 df_final = calculate_portfolio_returns(df_final)
 df_final.to_csv('final_df.csv')
 
-COL_RET = ['mom_spread_6_score_ret_ew', 'mom_spread_6_score_ret_sw', 'mom_spread_6_score_ret_mw',
-           'mom_spread_6_score_sa_ret_ew', 'mom_spread_6_score_sa_ret_sw', 'mom_spread_6_score_sa_ret_mw',
-           'mom_spread_12_m_1_score_ret_ew', 'mom_spread_12_m_1_score_ret_sw',
-           'mom_spread_12_m_1_score_sa_ret_ew', 'mom_spread_12_m_1_score_sa_ret_sw',
-           'mom_spread_12_m_1_score_ret_mw', 'momentum_score_ret_ew', 'momentum_score_ret_sw',
-           'mom_spread_12_m_1_score_sa_ret_mw', 'momentum_score_sa_ret_ew', 'momentum_score_sa_ret_sw',
-           'momentum_score_ret_mw', 'carry_score_ret_ew', 'carry_score_ret_sw', 'carry_score_ret_mw',
-           'momentum_score_sa_ret_mw', 'carry_score_sa_ret_ew', 'carry_score_sa_ret_sw', 'carry_score_sa_ret_mw',
-           'leverage_z_ret_ew',	'leverage_z_ret_sw', 'leverage_z_ret_mw', 
-           'leverage_z_sa_ret_ew', 'leverage_z_sa_ret_sw', 'leverage_z_sa_ret_mw',
-           'profit_z_ret_ew', 'profit_z_ret_sw', 'profit_z_ret_mw',
-           'profit_z_sa_ret_ew', 'profit_z_sa_ret_sw', 'profit_z_sa_ret_mw',
-           'quality_score_ret_ew', 'quality_score_ret_sw', 'quality_score_ret_mw',
-           'quality_score_sa_ret_ew', 'quality_score_sa_ret_sw', 'quality_score_sa_ret_mw',
-           'value_score_ret_ew', 'value_score_ret_sw', 'value_score_ret_mw',
-           'value_score_sa_ret_ew', 'value_score_sa_ret_sw', 'value_score_sa_ret_mw',
-           'combined_score_ret_ew', 'combined_score_ret_sw', 'combined_score_ret_mw',
-           'combined_score_sa_ret_ew', 'combined_score_sa_ret_sw', 'combined_score_sa_ret_mw',
-           'benchmark_ret']
+COL_RET = ['mom_spread_6_score_ret_ew_le', 'mom_spread_6_score_ret_sw_le', 'mom_spread_6_score_ret_mw_le',
+           'mom_spread_6_score_ret_ew_ltr', 'mom_spread_6_score_ret_sw_ltr', 'mom_spread_6_score_ret_mw_ltr',
+           'mom_spread_6_score_sa_ret_ew_le', 'mom_spread_6_score_sa_ret_sw_le', 'mom_spread_6_score_sa_ret_mw_le',
+           'mom_spread_6_score_sa_ret_ew_ltr', 'mom_spread_6_score_sa_ret_sw_ltr', 'mom_spread_6_score_sa_ret_mw_ltr',
+           'mom_spread_12_m_1_score_ret_ew_le', 'mom_spread_12_m_1_score_ret_sw_le',
+           'mom_spread_12_m_1_score_ret_ew_ltr', 'mom_spread_12_m_1_score_ret_sw_ltr',
+           'mom_spread_12_m_1_score_sa_ret_ew_le', 'mom_spread_12_m_1_score_sa_ret_sw_le',
+           'mom_spread_12_m_1_score_sa_ret_ew_ltr', 'mom_spread_12_m_1_score_sa_ret_sw_ltr',
+           'mom_spread_12_m_1_score_ret_mw_le', 'momentum_score_ret_ew_le', 'momentum_score_ret_sw_le',
+           'mom_spread_12_m_1_score_ret_mw_ltr', 'momentum_score_ret_ew_ltr', 'momentum_score_ret_sw_ltr',
+           'mom_spread_12_m_1_score_sa_ret_mw_le', 'momentum_score_sa_ret_ew_le', 'momentum_score_sa_ret_sw_le',
+           'mom_spread_12_m_1_score_sa_ret_mw_ltr', 'momentum_score_sa_ret_ew_ltr', 'momentum_score_sa_ret_sw_ltr',
+           'momentum_score_ret_mw_le', 'carry_score_ret_ew_le', 'carry_score_ret_sw_le', 'carry_score_ret_mw_le',
+           'momentum_score_ret_mw_ltr', 'carry_score_ret_ew_ltr', 'carry_score_ret_sw_ltr', 'carry_score_ret_mw_ltr',
+           'momentum_score_sa_ret_mw_le', 'carry_score_sa_ret_ew_le', 'carry_score_sa_ret_sw_le', 'carry_score_sa_ret_mw_le',
+           'momentum_score_sa_ret_mw_ltr', 'carry_score_sa_ret_ew_ltr', 'carry_score_sa_ret_sw_ltr', 'carry_score_sa_ret_mw_ltr',
+           'leverage_z_ret_ew_le',	'leverage_z_ret_sw_le', 'leverage_z_ret_mw_le',
+           'leverage_z_ret_ew_ltr',	'leverage_z_ret_sw_ltr', 'leverage_z_ret_mw_ltr',
+           'leverage_z_sa_ret_ew_le', 'leverage_z_sa_ret_sw_le', 'leverage_z_sa_ret_mw_le',
+           'leverage_z_sa_ret_ew_ltr', 'leverage_z_sa_ret_sw_ltr', 'leverage_z_sa_ret_mw_ltr',
+           'profit_z_ret_ew_le', 'profit_z_ret_sw_le', 'profit_z_ret_mw_le',
+           'profit_z_ret_ew_ltr', 'profit_z_ret_sw_ltr', 'profit_z_ret_mw_ltr',
+           'profit_z_sa_ret_ew_le', 'profit_z_sa_ret_sw_le', 'profit_z_sa_ret_mw_le',
+           'profit_z_sa_ret_ew_ltr', 'profit_z_sa_ret_sw_ltr', 'profit_z_sa_ret_mw_ltr',
+           'quality_score_ret_ew_le', 'quality_score_ret_sw_le', 'quality_score_ret_mw_le',
+           'quality_score_sa_ret_ew_ltr', 'quality_score_sa_ret_sw_ltr', 'quality_score_sa_ret_mw_ltr',
+           'spread_to_pd_res_score_ret_ew_le', 'spread_to_pd_res_score_ret_sw_le', 'spread_to_pd_res_score_ret_mw_le',
+           'spread_to_pd_res_score_ret_ew_ltr', 'spread_to_pd_res_score_ret_sw_ltr', 'spread_to_pd_res_score_ret_mw_ltr',
+           'spread_to_pd_res_score_sa_ret_ew_le', 'spread_to_pd_res_score_sa_ret_sw_le', 'spread_to_pd_res_score_sa_ret_mw_le',
+           'spread_to_pd_res_score_sa_ret_ew_ltr', 'spread_to_pd_res_score_sa_ret_sw_ltr', 'spread_to_pd_res_score_sa_ret_mw_ltr',
+           'value_reg_richness_score_ret_ew_le', 'value_reg_richness_score_ret_sw_le', 'value_reg_richness_score_ret_mw_le',
+           'value_reg_richness_score_ret_ew_ltr', 'value_reg_richness_score_ret_sw_ltr', 'value_reg_richness_score_ret_mw_ltr',
+           'value_reg_richness_score_sa_ret_ew_le', 'value_reg_richness_score_sa_ret_sw_le', 'value_reg_richness_score_sa_ret_mw_le',
+           'value_reg_richness_score_sa_ret_ew_ltr', 'value_reg_richness_score_sa_ret_sw_ltr', 'value_reg_richness_score_sa_ret_mw_ltr',
+           'value_score_ret_ew_le', 'value_score_ret_sw_le', 'value_score_ret_mw_le',
+           'value_score_ret_ew_ltr', 'value_score_ret_sw_ltr', 'value_score_ret_mw_ltr',
+           'value_score_sa_ret_ew_le', 'value_score_sa_ret_sw_le', 'value_score_sa_ret_mw_le',
+           'value_score_sa_ret_ew_ltr', 'value_score_sa_ret_sw_ltr', 'value_score_sa_ret_mw_ltr',
+           'combined_score_ret_ew_le', 'combined_score_ret_sw_le', 'combined_score_ret_mw_le',
+           'combined_score_ret_ew_ltr', 'combined_score_ret_sw_ltr', 'combined_score_ret_mw_ltr',
+           'combined_score_sa_ret_ew_le', 'combined_score_sa_ret_sw_le', 'combined_score_sa_ret_mw_le',
+           'combined_score_sa_ret_ew_ltr', 'combined_score_sa_ret_sw_ltr', 'combined_score_sa_ret_mw_ltr',
+           'benchmark_ret_le', 'benchmark_ret_ltr']
 
 df_final_ret = df_final.groupby(['DATE'])[COL_RET].sum()
 
