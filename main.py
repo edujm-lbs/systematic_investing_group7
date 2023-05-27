@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from carry import calculate_carry_signals
@@ -25,8 +26,9 @@ df_data['TMT_2'] = df_data['TMT'] ** 2
 l_df = []
 for date in df_data.DATE.sort_values().unique()[13:]:
     print(date)
+    date_prev = date - np.timedelta64(500, 'D')
     # For momentum signal calculation we require trailing dates.
-    df_dt = df_data[df_data.DATE <= date].copy()
+    df_dt = df_data[(df_data.DATE > date_prev) & (df_data.DATE <= date)].copy()
     # 1. Calculation of signals (should it be raw or output directly Z-score?)
     df_dt_m = calculate_momentum_signals(df_dt, date)
     # Carry
