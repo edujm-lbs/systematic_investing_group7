@@ -12,7 +12,7 @@ import pandas as pd
 
 from utils import calculate_dts_residuals, z_score, calculate_portfolio_returns, calculate_portfolio_weights
     
-def calculate_value_signals(df):
+def calculate_value_signals_new(df):
     df['model_spread'] = np.nan
     #drop the Blank cells in N_SP & sector column 
     df['N_SP'].replace('', np.nan, inplace=True)
