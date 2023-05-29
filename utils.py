@@ -15,7 +15,7 @@ COL_FACTORS_NAME = ['mom_spread_6_score', 'mom_spread_12_m_1_score',
 
 def z_score(x):
     """
-    Normilises a set of values by calculating the Z-score.
+    Normalises a set of values by calculating the Z-score.
 
     Parameters
     ----------
@@ -80,5 +80,5 @@ def calculate_portfolio_returns(df):
 def calculate_dts_residuals(df, Y_name):
     Y = df[Y_name].to_numpy()
     X = df.dts.to_numpy()
-    reg_model = sm.OLS(Y,X, missing='drop').fit()  # training the model
-    return reg_model.resid # residual values
+    reg_model = sm.OLS(Y,X, missing='drop').fit()
+    return reg_model.resid

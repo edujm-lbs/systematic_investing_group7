@@ -3,6 +3,10 @@ import numpy as np
 from scipy.optimize import linprog
 from itertools import repeat
 
+###########################################################################
+# We did not end up optimizing portfolio given the limited time resources #
+###########################################################################
+
 def get_optim_ports(data, max_wgt, sector_bound, credit_bound, duration_bound, dts_bound):
   """
   this will return a dataframe of the optimal portfolio, along weight the market weighted
