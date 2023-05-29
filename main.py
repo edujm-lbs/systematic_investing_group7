@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -7,6 +9,12 @@ from quality import quality_calc
 from utils import calculate_portfolio_weights, calculate_portfolio_returns
 from value import calculate_value_signals
 
+########################################################################
+# Script containing the main logic for the investment strategy process #
+# The script outputs two csv files with the set of securities selected #
+########################################################################
+
+warnings.filterwarnings(action='once')
 
 # Include any relevant field used for your analysis - avoid having such a large DataFrame
 REL_COL = ['DATE', 'CUSIP', 'AMOUNT_OUTSTANDING', 'RET_EOM', 'SPREAD_yield',
@@ -29,15 +37,16 @@ for date in df_data.DATE.sort_values().unique()[13:]:
     date_prev = date - np.timedelta64(500, 'D')
     # For momentum signal calculation we require trailing dates.
     df_dt = df_data[(df_data.DATE > date_prev) & (df_data.DATE <= date)].copy()
-    # 1. Calculation of signals (should it be raw or output directly Z-score?)
+    # 1. Calculation of signals both sector adjusted ("sa") and raw. All signals are DTS adjusted.
+    ## > Momentum, including 6-months and 12-1-months momentum signals. 
     df_dt_m = calculate_momentum_signals(df_dt, date)
-    # Carry
+    ## > Carry, including only one signal.
     df_dt_m_c = calculate_carry_signals(df_dt_m)
-    # Quality
+    ## > Quality, including profitability and leverage signals.
     df_dt_m_c_q = quality_calc(df_dt_m_c)
-    # Value
+    ## > Value, including predicted spread differential and spread to PD signals.
     df_dt_m_c_q_v = calculate_value_signals(df_dt_m_c_q)
-    # 2. Combine all Style combined Z-Scores on to one
+    ## 2. Combine all Style combined Z-Scores on to one
     df_dt_m_c_q_v['combined_score'] = \
         df_dt_m_c_q_v[['momentum_score', 'carry_score', 'quality_score', 'value_score']].mean(axis=1)
     df_dt_m_c_q_v['combined_score_sa'] = \
@@ -52,7 +61,7 @@ for date in df_data.DATE.sort_values().unique()[13:]:
 df_final = pd.concat(l_df)
 
 df_final = calculate_portfolio_returns(df_final)
-df_final.to_csv('final_df.csv')
+df_final.to_csv('strategy_portfolio_output.csv')
 
 COL_RET = ['mom_spread_6_score_ret_ew_le', 'mom_spread_6_score_ret_sw_le', 'mom_spread_6_score_ret_mw_le',
            'mom_spread_6_score_ret_ew_ltr', 'mom_spread_6_score_ret_sw_ltr', 'mom_spread_6_score_ret_mw_ltr',
@@ -99,5 +108,4 @@ COL_RET = ['mom_spread_6_score_ret_ew_le', 'mom_spread_6_score_ret_sw_le', 'mom_
            'benchmark_ret_le', 'benchmark_ret_ltr']
 
 df_final_ret = df_final.groupby(['DATE'])[COL_RET].sum()
-
-df_final_ret.to_csv('final_df_ret.csv')
+df_final_ret.to_csv('strategy_portfolio_return.csv')
